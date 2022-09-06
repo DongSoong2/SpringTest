@@ -18,13 +18,17 @@
             
             // Object(Dataset, ExcelExportObject) Initialize
             obj = new Dataset("Dataset00", this);
-            obj._setContents("<ColumnInfo><Column id=\"Column0\" type=\"STRING\" size=\"256\"/></ColumnInfo><Rows><Row><Col id=\"Column0\">11</Col></Row><Row><Col id=\"Column0\">22</Col></Row><Row><Col id=\"Column0\">33</Col></Row><Row><Col id=\"Column0\">44</Col></Row></Rows>");
+            obj._setContents("<ColumnInfo><Column id=\"제목\" type=\"STRING\" size=\"256\"/><Column id=\"값\" type=\"STRING\" size=\"256\"/></ColumnInfo><Rows><Row><Col id=\"제목\">대제목</Col><Col id=\"값\">0</Col></Row><Row><Col id=\"제목\">소제목</Col><Col id=\"값\">1</Col></Row><Row><Col id=\"제목\">소제목</Col><Col id=\"값\">1</Col></Row><Row><Col id=\"제목\">소제목</Col><Col id=\"값\">1</Col></Row><Row><Col id=\"제목\">소제목</Col><Col id=\"값\">1</Col></Row></Rows>");
             this.addChild(obj.name, obj);
             
             // UI Components Initialize
-            obj = new Button("Button00","344","108","120","50",null,null,null,null,null,null,this);
-            obj.set_taborder("0");
-            obj.set_text("Button00");
+            obj = new Grid("Grid00","90","52","190","277",null,null,null,null,null,null,this);
+            obj.set_taborder("3");
+            obj.set_binddataset("Dataset00");
+            obj.set_treeinitstatus("expand,all");
+            obj.set_autofittype("col");
+            obj.set_treeusecheckbox("false");
+            obj._setContents("<Formats><Format id=\"default\"><Columns><Column size=\"195\"/></Columns><Rows><Row size=\"33\"/></Rows><Band id=\"body\"><Cell text=\"bind:제목\" displaytype=\"treeitemcontrol\" edittype=\"tree\" border=\"0px none\" treelevel=\"bind:값\" treestartlevel=\"1\"/></Band></Format></Formats>");
             this.addChild(obj.name, obj);
             // Layout Functions
             //-- Default Layout : this
@@ -46,22 +50,21 @@
         
         // User Script
         this.registerScript("tetetetet.xfdl", function() {
-
-        this.Button00_onclick = function(obj,e)
+        this.tetetetet_onload = function(obj,e)
         {
-        	var test = this.Dataset00.rowcount;
-        	var test2 = this.Dataset00.getRowCount();
+        	//this.Dataset00
+        	var test = this.Grid00.body;
+        	trace("object key : " + Object.keys(test));
+        	trace("object values : " + Object.values(test));
 
-        	trace(typeof(test));
-        	trace(typeof(test2));
+        	trace(this.Grid00.formats.getAttribute("size"));
         };
-
         });
         
         // Regist UI Components Event
         this.on_initEvent = function()
         {
-            this.Button00.addEventHandler("onclick",this.Button00_onclick,this);
+            this.addEventHandler("onload",this.tetetetet_onload,this);
         };
         this.loadIncludeScript("tetetetet.xfdl");
         this.loadPreloadList();

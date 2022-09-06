@@ -80,6 +80,11 @@
             obj.set_taborder("8");
             obj.set_text("Import");
             this.addChild(obj.name, obj);
+
+            obj = new Button("Button06","527","94","40","20",null,null,null,null,null,null,this);
+            obj.set_taborder("9");
+            obj.set_text("Button06");
+            this.addChild(obj.name, obj);
             // Layout Functions
             //-- Default Layout : this
             obj = new Layout("default","Desktop_screen",1280,720,this,function(p){});

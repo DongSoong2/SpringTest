@@ -35,7 +35,7 @@
         	"launch":"./Application_Desktop.xadl.js",
         	"quickview":"./Application_Desktop.xadl.quickview.js",
         	"form":[
-        				"./FrameBase/FileDownTransfer.xfdl.js"
+        				"./FrameBase/Form_Work.xfdl.js"
         	]
         }
         ],  
