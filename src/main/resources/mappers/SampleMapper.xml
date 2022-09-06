@@ -14,8 +14,7 @@
 
 
 	<!-- resultType : select 된 데이터를 반환할 (그릇)을 정해주는 것 -->
-	<!-- parameterType : 자바에서 ~~(해당vo 또는 return이 될 string / int 등) 값이 들어올거란걸 
-		인지시켜준다 -->
+	<!-- parameterType : 자바에서 ~~(해당vo 또는 return이 될 string / int 등) 값이 들어올거란걸 인지시켜준다 -->
 
 
 	<select id="selectSampleList"
