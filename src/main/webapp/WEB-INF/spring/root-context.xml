@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	https://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+      http://www.springframework.org/schema/jdbc  http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
+
+	<!-- Mybatis를 이용한 jdbc 연동은 3단계로 이루어져있다  -->
+	<!-- jdbc를 사용한 MS-SQL 연동 작업  호출 시 dataSource로 호출 기본적으로 MS-SQL 포트는 1433 사용  -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+		<property name="url" value="jdbc:sqlserver://localhost:1433;databaseName=testDB" />
+		<property name="username" value="testlogin" />
+		<property name="password" value="a123456789" />
+	</bean>
+
+
+	<!-- MS-SQL 연동 시 필요한 mybatis 설정과 mapper 경로 설정 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation"	value="classpath:/mybatis-config.xml" />
+		<property name="mapperLocations" value="classpath*:/mappers/**/*Mapper.xml" />
+	</bean>
+
+
+	<!-- sqlSessionFactory의 id를 가진 Mybatis쿼리문을 수행해주는 역할  -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate" destroy-method="clearCache">
+		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+
+
+
+	<!-- 트랜잭션 처리를 위한 bean 선언 -->
+	<!-- https://kouzie.github.io/spring/Spring-%EC%8A%A4%ED%94%84%EB%A7%81-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98/# -->
+ 	<!-- DataSourceTranscationManager를 사용한 트랜잭션 처리 -->
+ 	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- tx 네임스페이스를 이용한 트랜잭션 설정 - 선언적 트랜잭션 처리 -->
+	<!--
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="*" rollback-for="Exception"/>
+		</tx:attributes>
+	</tx:advice>
+
+    <aop:config>
+		<aop:pointcut id="requiredTx" expression="execution(* sample.*..*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="requiredTx" />
+	</aop:config>  
+	-->
+</beans>

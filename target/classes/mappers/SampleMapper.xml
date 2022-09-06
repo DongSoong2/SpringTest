@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="sample.service.impl.SampleMapper">
+
+	<!-- resultMap을 사용하기 위한 선언 -->
+	<!-- resultMap을 사용하여 자동 매핑되기 때문에 편리 / resultType처럼 alias를 하지 않아도 된다 -->
+	<resultMap id="sample" type="sample.vo.SampleVO">
+		<result property="id" column="ID" />
+		<result property="name" column="NAME" />
+		<result property="description" column="DESCRIPTION" />
+		<result property="useYn" column="USE_YN" />
+		<result property="regUser" column="REG_USER" />
+	</resultMap>
+
+
+	<!-- resultType : select 된 데이터를 반환할 (그릇)을 정해주는 것 -->
+	<!-- parameterType : 자바에서 ~~(해당vo 또는 return이 될 string / int 등) 값이 들어올거란걸 
+		인지시켜준다 -->
+
+
+	<select id="selectSampleList"
+		parameterType="sample.vo.SearchConditionVO" resultMap="sample">
+		SELECT
+		ID, NAME, DESCRIPTION, USE_YN, REG_USER
+		FROM SAMPLE
+		WHERE 1=1
+		<if test="keyword != null and keyword != ''">
+			<choose>
+				<!-- MSSQL LIKE에 %를 붙이기 위해서는 아래와 같이 해야한다 각 DB마다 설정법이 다름 -->
+				<when test="searchType == 'ID'">
+					AND ID LIKE '%' + #{keyword} + '%'
+				</when>
+				<when test="searchType == 'NAME'">
+					AND NAME LIKE '%' + #{keyword} + '%'
+				</when>
+			</choose>
+		</if>
+		ORDER BY ID ASC
+	</select>
+
+	<insert id="insertSampleList" parameterType="sample.vo.SampleVO">
+		INSERT INTO SAMPLE
+		(
+		ID
+		, NAME
+		, DESCRIPTION
+		, USE_YN
+		, REG_USER )
+		VALUES ( #{id}
+		, #{name}
+		,
+		#{description}
+		, #{useYn}
+		, #{regUser} )
+	</insert>
+
+
+	<update id="updateSampleList" parameterType="sample.vo.SampleVO">
+		UPDATE SAMPLE
+		SET
+		ID=#{id}
+		, NAME=#{name}
+		, DESCRIPTION=#{description}
+		, USE_YN=#{useYn}
+		WHERE ID=#{id}
+	</update>
+
+
+
+
+	<delete id="deleteSampleList" parameterType="sample.vo.SampleVO">
+		DELETE FROM SAMPLE
+		WHERE ID=#{id}
+	</delete>
+
+
+
+
+
+</mapper>

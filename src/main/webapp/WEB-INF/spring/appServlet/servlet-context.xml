@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/mvc
+	https://www.springframework.org/schema/mvc/spring-mvc.xsd
+	http://www.springframework.org/schema/beans
+	https://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	https://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+	
+	<!-- 어노테이션 설정 방식 사용  -  -->
+	<mvc:annotation-driven/>
+	
+	<!-- sample 패키지 안의 클래스들을 스캔하고, 어노테이션을 확인 후 bean 인스턴스를 생성 -->
+	<context:component-scan base-package="sample" />
+
+	<!-- 정적 자원 매핑 기능 -->
+	<!-- 모든 요청은 MVC에 영향을 받아서 직접 접근이 불가능하다.
+		location에 대한 요청이 들어오면 WAS에게 위임을하면서 mapping에 해당하는 각각의 URL로 직접 접근이 가능  -->
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+	<mvc:resources mapping="/sample/**" location="/sample/" />
+
+	<!-- WEB-INF/views/뷰이름.jsp -->
+	<!-- p:order를 사용하여 넥사크로N RequestMappingHandlerAdapter 보다 후순위로 호출한다 -->
+	<!-- hello 요청이 controller를 통해 return이 되면 
+			prifix(접두어)|hello|suffix(접미어) 로 표기되므로 해당 URL 요청은 /WEB-INF/views/hello.jsp 가 된다--> 
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" p:order="1">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+
+         
+	<!-- Nexacro N uiadapter 연동 작업 -->
+ 	<bean id="nexacroInterceptor" class="com.nexacro.uiadapter.spring.core.servlet.NexacroInterceptor"/>
+    <bean id="nexacroFileView"    class="com.nexacro.uiadapter.spring.core.view.NexacroFileView" />
+    <bean id="nexacroView"        class="com.nexacro.uiadapter.spring.core.view.NexacroView">
+        <property name="defaultContentType" value="PlatformXml" />
+        <property name="defaultCharset" value="UTF-8" />
+    </bean>
+     
+    <!-- 넥사크로N RequestMappingHandlerAdapter 구현체 등록 -->
+    <bean class="com.nexacro.uiadapter.spring.core.resolve.NexacroRequestMappingHandlerAdapter" p:order="0">
+        <property name="customArgumentResolvers">
+            <list><bean class="com.nexacro.uiadapter.spring.core.resolve.NexacroMethodArgumentResolver" /></list>
+        </property>
+        <property name="customReturnValueHandlers">
+            <list>
+                <bean class="com.nexacro.uiadapter.spring.core.resolve.NexacroHandlerMethodReturnValueHandler">
+                    <property name="view"     ref="nexacroView" />
+                    <property name="fileView" ref="nexacroFileView" />
+                </bean>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- 넥사크로N EXCEPTION-RESOLVER 등록 -->
+    <bean id="exceptionResolver" class="com.nexacro.uiadapter.spring.core.resolve.NexacroMappingExceptionResolver">
+        <property name="view" ref="nexacroView" />   
+        <property name="shouldLogStackTrace" value="true" />   
+        <property name="shouldSendStackTrace" value="false" />
+        <!-- shouldSendStackTrace 가 false 일 경우 nexacroN으로 전송되는 에러메시지  -->
+        <!-- <property name="defaultErrorMsg" value="An Error Occured. check the ErrorCode for detail of error infomation" /> -->
+        <property name="defaultErrorMsg" value="fail.common.msg" />
+        <property name="messageSource" ref="messageSource" />
+    </bean>
+    
+ 	
+ 	<!-- NexacroException 발생으로 인한 message 처리 -->
+	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="defaultEncoding" value="UTF-8"/>
+		<property name="cacheSeconds" value="60" />
+		<property name="basenames">
+			<list>
+				<!-- classpath: 는 src/main/resources를 가르킨다 -->
+				<!-- {basename}_언어코드_국가코드.properties -->
+				<value>classpath:/message/message</value>
+			</list>
+		</property>
+	</bean>
+	
+	
+	<!-- export 내보내기 -->
+	<!-- /////////////////////////////////// XENI REQUEST MAPPING 시작 /////////////////////////////////// -->
+	<bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter" />
+	<bean id="xeniUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping" p:order="0">
+	    <property name="mappings">
+	        <props>
+	        	<!-- URL로 부터 XExportImport.do 가 호출 된다면  해당 id의 class를 참조한다-->
+	            <prop key="/XExportImport.do">xeniWrappingController</prop>
+	        </props>
+	    </property>
+	</bean>
+	<bean id="xeniWrappingController" class="org.springframework.web.servlet.mvc.ServletWrappingController">
+	    <property name="servletClass">
+	        <value>com.nexacro.java.xeni.services.GridExportImportServlet</value>
+	    </property>
+	</bean>
+	<!-- /////////////////////////////////// XENI REQUEST MAPPING 끝 /////////////////////////////////// -->
+	
+
+	<!-- import 들여오기 -->
+	<!-- Multipart Resolver 최대 10메가 바이트(대략) 까지 업로드가 가능하도록 설정 ( 해당설정이 없으면 xeni Import 할수없음 ) -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	    <property name="maxUploadSize" value="100000000" />
+	    <property name="maxInMemorySize" value="100000000" />
+	</bean>
+	
+</beans:beans>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<!-- myBatis Inteceptor for get column information -->
+	<!-- 데이터를 조회할 때 값이 없으면 컬럼도 null로 넘어오지만 해당 plugin을 작성하면 값이 없어도 컬럼값을 가져 올 수 있다 -->
+	<plugins>
+		<plugin
+			interceptor="com.nexacro.uiadapter.spring.dao.mybatis.NexacroMybatisMetaDataProvider" />
+		<plugin
+			interceptor="com.nexacro.uiadapter.spring.dao.mybatis.NexacroMybatisResultSetHandler" />
+	</plugins>
+</configuration>

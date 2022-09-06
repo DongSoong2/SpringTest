@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee https://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+	<!-- welcome-file-list 태그를 사용함으로써 웹 어플리케이션의 서버 루트 주소만 입력하여 접근했을 경우 처음에 띄워줄 경로 설정하는 태그 -->
+	<welcome-file-list>
+		<welcome-file>/index.html</welcome-file>
+		<welcome-file>/index.jsp</welcome-file>
+	</welcome-file-list>
+
+
+	<!-- The definition of the Root Spring Container shared by all Servlets and Filters -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/spring/root-context.xml</param-value>
+	</context-param>
+	
+	<!-- Creates the Spring Container shared by all Servlets and Filters -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+	<!-- Processes application requests -->
+	<servlet>
+		<servlet-name>appServlet</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/spring/appServlet/servlet-context.xml</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+		
+	<servlet-mapping>
+		<servlet-name>appServlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+	
+	<!-- 한글 인코딩 -->
+	<filter>
+		<filter-name>charEncoding</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>charEncoding</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<!-- xeni context param -->
+	<!-- Export 시 파일생성경로 없을시 자동생성 - 톰캣서버경로에 생성-->
+	<!-- C:\Users\user\Desktop\sts-bundle\STS\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\wtpwebapps\sampleuiadapterN\sample -->
+	<context-param>
+	    <param-name>export-path</param-name>
+	    <param-value>/sample/excel/</param-value>
+	</context-param>
+	<!-- Import 시 파일생성경로 없을시 자동생성 -->
+	<context-param>
+	    <param-name>import-path</param-name>
+	    <param-value>/sample/excel/</param-value>
+	</context-param>
+	<!-- 엑셀파일 모니터링 여부 (true 설정시 파일삭제 실행) -->
+	<context-param>
+	    <param-name>monitor-enabled</param-name>
+	    <param-value>true</param-value>
+	</context-param>
+	<!-- 엑셀파일 모니터링 주기 (분) -->
+	<context-param>
+	    <param-name>monitor-cycle-time</param-name>
+	    <param-value>30</param-value>
+	</context-param>
+	<!-- 엑셀파일 시 생성 후 유지시간 (생성후 해당시간(분)이 지난 파일 삭제) -->
+	<context-param>
+	    <param-name>file-storage-time</param-name>
+	    <param-value>10</param-value>
+	</context-param>
+
+</web-app>
