@@ -97,6 +97,7 @@
         this.FileDialog00_onclose = function(obj,e)
         {
           if(e.reason == 0 ) {  //파일선택 취소
+        	trace("파일선택 취소하였");
             return;
           }else{
             if(e.reason == 1) {    //FileDialog.LOAD 옵션의 파일선택

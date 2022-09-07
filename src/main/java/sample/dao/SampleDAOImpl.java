@@ -22,6 +22,7 @@ public class SampleDAOImpl implements SampleDAO {
 	public List<SampleVO> selectSampleList(SearchConditionVO searchVo) throws Exception {
 		// select를 위한 mybatis의 selectList 속성을 사용하여 mapper의 sql문을 실행 시킨후 값을 되받아서
 		// Controller에 주기 위해 return 작업을 한다
+		
 		return mybatis.selectList("sample.service.impl.SampleMapper.selectSampleList", searchVo);
 	}
 

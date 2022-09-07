@@ -52,35 +52,64 @@ public class FileController {
 
 	@Autowired
 	private WebApplicationContext appContext;
-
+	
 	/*
 	 * WAS가 웹 브라우저로부터 Servlet 요청을 받으면 요청을 받을 때 전달 받은 정보를 HttpServletRequest객체를 생성하여
 	 * 저장 웹 브라우저에게 응답을 돌려줄 HttpServletResponse객체를 생성(빈 객체) 생성된
 	 * HttpServletRequest(정보가 저장된)와 HttpServletResponse(비어 있는)를 Servlet에게 전달
 	 */
 	// 파일 저장 후 저장파일 정보 반환 (화면에서 호출)
+//	@RequestMapping(value = "/uploadFiles.do")
+//	public NexacroResult uploadFiles(HttpServletRequest request, HttpServletResponse response) throws Exception {
+//		// MultipartHttpServletRequest 체크
+//		if (!(request instanceof MultipartHttpServletRequest)) {
+//			if (logger.isDebugEnabled()) {
+//				logger.debug("Request is not a MultipartHttpServletRequest");
+//			}
+//			return new NexacroResult();
+//		}
+//
+//		logger.debug("-------------------- nexacro platform uploadFiles ---------------------------");
+//
+//		// 반환될 파일저장 정보 Dataset 생성
+//		DataSet resultDs = createDataSet4UploadResult();
+//
+//		// 다중 파일 업로드를 위한 객체 생성
+//		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+//
+//		// 파라미터 처리
+//		uploadParameters(multipartRequest);
+//		// 파일저장 및 파일정보 반환 Dataset 셋팅처리
+//		uploadMultipartFiles(multipartRequest, resultDs);
+//
+//		// NexacroResult 선언 및 각 정보를 셋팅
+//		NexacroResult nexacroResult = new NexacroResult();
+//		nexacroResult.addDataSet(resultDs);
+//		nexacroResult.setErrorCode(0);
+//		nexacroResult.setErrorMsg("File Save Success!");
+//
+//		return nexacroResult;
+//	}
+	
+	
+	
 	@RequestMapping(value = "/uploadFiles.do")
-	public NexacroResult uploadFiles(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		// MultipartHttpServletRequest 체크
-		if (!(request instanceof MultipartHttpServletRequest)) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Request is not a MultipartHttpServletRequest");
-			}
-			return new NexacroResult();
-		}
+	public NexacroResult uploadFiles(MultipartFile image, String dirName) throws Exception {
 
 		logger.debug("-------------------- nexacro platform uploadFiles ---------------------------");
 
 		// 반환될 파일저장 정보 Dataset 생성
 		DataSet resultDs = createDataSet4UploadResult();
 
-		// 다중 파일 업로드를 위한 객체 생성
-		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-
-		// 파라미터 처리
-		uploadParameters(multipartRequest);
-		// 파일저장 및 파일정보 반환 Dataset 셋팅처리
-		uploadMultipartFiles(multipartRequest, resultDs);
+		
+		
+		
+		
+		
+		
+		
+		
+		
 
 		// NexacroResult 선언 및 각 정보를 셋팅
 		NexacroResult nexacroResult = new NexacroResult();
@@ -100,9 +129,14 @@ public class FileController {
 		ds.addColumn("filesize", PlatformDataType.INT);
 
 		System.out.println("데이터셋 확인하세요 : " + ds);
+		
 		return ds;
 	}
 
+	
+	
+	
+	
 	// 파라미터 셋팅
 	private void uploadParameters(MultipartHttpServletRequest multipartRequest) throws NexacroException {
 		// Enumeration : 반복문을 통해 데이터를 한번에 출력할 수 있도록 도와준다
@@ -116,6 +150,7 @@ public class FileController {
 
 			// 해당 요소가 없을 경우
 			if (parameterName == null || parameterName.length() == 0) {
+				//
 				continue;
 			}
 
@@ -132,6 +167,47 @@ public class FileController {
 		}
 	}
 
+	
+	
+	/*
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * */
+	
+	
+	
 	// 실제파일 저장 및 저장파일정보 셋팅
 	private void uploadMultipartFiles(MultipartHttpServletRequest multipartRequest, DataSet resultDs) throws IOException {
 
