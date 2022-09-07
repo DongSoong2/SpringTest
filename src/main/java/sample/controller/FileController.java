@@ -96,7 +96,7 @@ public class FileController {
 	@RequestMapping(value = "/uploadFiles.do")
 	public NexacroResult uploadFiles(MultipartFile image, String dirName) throws Exception {
 
-		logger.debug("-----aaa-----fff------------ nexacro platform uploadFiles ---------------------------");
+		logger.debug("----aa-aaa-----fff------------ nexacro platform uploadFiles ---------------------------");
 
 		// 반환될 파일저장 정보 Dataset 생성
 		DataSet resultDs = createDataSet4UploadResult();
