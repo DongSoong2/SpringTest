@@ -81,23 +81,27 @@
         this.FileUpTransfer_onload = function(obj,e)
         {
           //파일업로드시 파일저장 폴더경로 PostData 셋팅
+          // jsp view 처리 form enctype="multipart/form-data"
           this.FileUpTransfer00.setPostData("filepath","sample");
           //파일업로드 전송 URL 셋팅
           this.FileUpTransfer00.set_url(this.sFileUrl);
         };
 
+
         //파일추가 버튼클릭
         this.Button00_onclick = function(obj,e)
         {
+        	trace("파일추가 버튼을 클릭하였습니다.");
           this.FileDialog00.open( "파일선택", FileDialog.LOAD );
         };
 
-        //파일선택창(FileDialog) 닫힐시
-        //Web 은 e.reason 이 1(FileDialog.LOAD) 이나 3(FileDialog.MULTILOAD) 일경우에만 발생
+
+        // 파일선택창(FileDialog) 닫힐시
+        // Web 은 e.reason 이 1(FileDialog.LOAD) 이나 3(FileDialog.MULTILOAD) 일경우에만 발생
         this.FileDialog00_onclose = function(obj,e)
         {
           if(e.reason == 0 ) {  //파일선택 취소
-        	trace("파일선택 취소하였");
+        	trace("파일선택을 취소하였습니다.");
             return;
           }else{
             if(e.reason == 1) {    //FileDialog.LOAD 옵션의 파일선택
@@ -123,17 +127,45 @@
         //업로드용 Virtual 파일 onsuccess 이벤트
         this.Upload_VirtualFile_onsuccess = function(obj, e)
         {
+        	trace("파일 업로드 success");
           if (e.reason == 1)  //open() callback
           {
             //파일사이즈 체크
             obj.getFileSize();
+        	// VirtualFile.getFilesSize() = 파일 크기의 반환여부와 관계없이 메소드의 수행여부를 반환 true false
+        	//trace("사이즈 체크 : " + obj.getFileSize());
           }
           if (e.reason == 9) //getFileSize() callback
           {
             obj.close();
 
+        	// 파일이름 및 파일크기
             var sFileName = obj.filename;
             var nFileSize = e.filesize;
+        	/*
+        		* 이미지파일의 확장자만 가져오기
+        			- $(문장의 끝을 의미)
+        			- i(대소문자 상관없이 비교)
+
+        			확장자가 되려면 파일 이름에서 마지막에 오는 닷(.) 다음에 이 확장자가 위치해야 합니다.
+        			이미 $기호를 통해서 파일 이름의 마지막에 오는 것은 확인하고 있으므로
+        			그냥 닷 다음에 확장자가 오는 것만 확인해 주면 됩니다.
+        			다만 RegExp에서 닷을 그냥 쓰면 다른 뜻으로 쓰이니까 역슬래쉬를 붙여서 써주어야 합니다.
+        			- /  \.(jpg|jpeg|png|gif|bmp)$  /
+        	*/
+        	var reg = /\.(jpg|jpeg|png|gif|bmp)$/i;
+
+        	//trace("확장자명 추출 : " + sFileName.lastIndexOf("."));
+
+        	if(sFileName.match(reg)) {
+        		alert("해당 파일은 이미지 파일입니다.");
+        	} else {
+        		alert("해당 파일은 이미지 파일이 아닙니다.");
+        		return;
+        	}
+
+        	trace("sFileName : " + sFileName + " / nFileSize : " + nFileSize);
+
 
             if(nFileSize > this.nMaxFileSize){
               alert("첨부파일 최대용량은 2 MByte 입니다.");
@@ -157,7 +189,7 @@
           msg += "errortype : "+e.errortype+"\n";
           msg += "errormsg : "+e.errormsg+"\n";
           msg += "statuscode : "+e.statuscode;
-
+        	trace("에러 발생");
           alert(msg);
         }
 

@@ -8,18 +8,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
-import java.util.Enumeration;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.slf4j.Logger;
@@ -35,80 +37,48 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import com.nexacro.java.xapi.data.DataSet;
 import com.nexacro.java.xapi.data.datatype.PlatformDataType;
 import com.nexacro.java.xapi.tx.PlatformType;
-import com.nexacro.uiadapter.spring.core.NexacroException;
 import com.nexacro.uiadapter.spring.core.data.NexacroFileResult;
 import com.nexacro.uiadapter.spring.core.data.NexacroResult;
 import com.nexacro.uiadapter.spring.core.util.CharsetUtil;
 
 @Controller
 public class FileController {
+	
 	private Logger logger = LoggerFactory.getLogger(FileController.class);
+	
 	// 프로그램이 실행되는 OS에 맞게 경로('/' or '\') 설정
 	private static final String SP = File.separator;
+	
 	// 서버 첨부파일 경로
 	private static final String PATH = "WEB-INF" + SP + "attachFile";
+	
 	// 사용자 폴더경로
-	private static String sUserPath = "";
+	private static String sUserPath = SP + "sample";
 
+	// UUID 설정
+	String uuid = UUID.randomUUID().toString();
+	
 	@Autowired
 	private WebApplicationContext appContext;
 	
-	/*
-	 * WAS가 웹 브라우저로부터 Servlet 요청을 받으면 요청을 받을 때 전달 받은 정보를 HttpServletRequest객체를 생성하여
-	 * 저장 웹 브라우저에게 응답을 돌려줄 HttpServletResponse객체를 생성(빈 객체) 생성된
-	 * HttpServletRequest(정보가 저장된)와 HttpServletResponse(비어 있는)를 Servlet에게 전달
-	 */
-	// 파일 저장 후 저장파일 정보 반환 (화면에서 호출)
-//	@RequestMapping(value = "/uploadFiles.do")
-//	public NexacroResult uploadFiles(HttpServletRequest request, HttpServletResponse response) throws Exception {
-//		// MultipartHttpServletRequest 체크
-//		if (!(request instanceof MultipartHttpServletRequest)) {
-//			if (logger.isDebugEnabled()) {
-//				logger.debug("Request is not a MultipartHttpServletRequest");
-//			}
-//			return new NexacroResult();
-//		}
-//
-//		logger.debug("-------------------- nexacro platform uploadFiles ---------------------------");
-//
-//		// 반환될 파일저장 정보 Dataset 생성
-//		DataSet resultDs = createDataSet4UploadResult();
-//
-//		// 다중 파일 업로드를 위한 객체 생성
-//		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-//
-//		// 파라미터 처리
-//		uploadParameters(multipartRequest);
-//		// 파일저장 및 파일정보 반환 Dataset 셋팅처리
-//		uploadMultipartFiles(multipartRequest, resultDs);
-//
-//		// NexacroResult 선언 및 각 정보를 셋팅
-//		NexacroResult nexacroResult = new NexacroResult();
-//		nexacroResult.addDataSet(resultDs);
-//		nexacroResult.setErrorCode(0);
-//		nexacroResult.setErrorMsg("File Save Success!");
-//
-//		return nexacroResult;
-//	}
-	
-	
-	
+	//private static final String CURR_IMAGE_REPO_PATH = "C:\\Users\\user\\Desktop";
+
+
 	@RequestMapping(value = "/uploadFiles.do")
-	public NexacroResult uploadFiles(MultipartFile image, String dirName) throws Exception {
+	public NexacroResult uploadFiles(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-		logger.debug("----aa-aaa-----fff------------ nexacro platform uploadFiles ---------------------------");
-
+		
 		// 반환될 파일저장 정보 Dataset 생성
-		DataSet resultDs = createDataSet4UploadResult();
+		DataSet resultDs = createDataSet();
+		
+	    MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+	    
 
-		
-		
-		
-		
-		
-		
-		
-		
+	    
+	    System.out.println("사용자 폴더경로 지정 : " + sUserPath);
+	    
+	    //파일저장 및 파일정보 반환 Dataset 셋팅처리
+	    uploadMultipartFiles(multipartRequest, resultDs);
 		
 
 		// NexacroResult 선언 및 각 정보를 셋팅
@@ -121,54 +91,93 @@ public class FileController {
 	}
 
 	// 반환용 파일정보 데이터셋 생성
-	private DataSet createDataSet4UploadResult() {
+	private DataSet createDataSet() {
 
 		DataSet ds = new DataSet("ds_output");
-		ds.addColumn("fileid", PlatformDataType.STRING);
-		ds.addColumn("filename", PlatformDataType.STRING);
-		ds.addColumn("filesize", PlatformDataType.INT);
+		ds.addColumn("file_uuid", PlatformDataType.STRING, 255);
+		ds.addColumn("file_name", PlatformDataType.STRING, 255);
+		ds.addColumn("file_size", PlatformDataType.INT);
+		ds.addColumn("file_savename", PlatformDataType.STRING, 255);
 
 		System.out.println("데이터셋 확인하세요 : " + ds);
-		
+
 		return ds;
 	}
 
-	
-	
-	
-	
-	// 파라미터 셋팅
-	private void uploadParameters(MultipartHttpServletRequest multipartRequest) throws NexacroException {
-		// Enumeration : 반복문을 통해 데이터를 한번에 출력할 수 있도록 도와준다
-		Enumeration<String> parameterNames = multipartRequest.getParameterNames();
 
-		// hasMoreElements: 읽어올 요소가 남아있는지 확인한다 있으면 true / 없으면 false
-		while (parameterNames.hasMoreElements()) {
+	// 실제파일 저장 및 저장파일정보 셋팅
+	private void uploadMultipartFiles(MultipartHttpServletRequest multipartRequest, DataSet resultDs) throws IOException {
 
-			// nextElement : 다음 요소를 읽어 옴
-			String parameterName = parameterNames.nextElement();
+		
+		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
 
-			// 해당 요소가 없을 경우
-			if (parameterName == null || parameterName.length() == 0) {
-				//
-				continue;
+		// 업로드한 파일의 저장경로
+		String filePath = getFilePath();
+		
+		// 업로드한 파일의 이름 가져오기
+		Set<String> keySet = fileMap.keySet();
+		
+		System.out.println("filePath : " + filePath);
+		System.out.println("keySet" + keySet);
+		
+		// 파일업로드 된 keySet 만큼 반복문
+		for (String name : keySet) {
+			
+			MultipartFile multipartFile = fileMap.get(name);
+			
+			// 업로드 되는 실제 파일의 이름
+			String originalFilename = multipartFile.getOriginalFilename();
+			
+			// 업로드 되는 파일의 이름 '원본파일이름_UUID.확장자명'
+			String saveName = FilenameUtils.removeExtension(multipartFile.getName())+"_"+uuid+"."+FilenameUtils.getExtension(multipartFile.getName());
+			
+			System.out.println("originalFilename : " + originalFilename);
+
+			File destination = new File(filePath);
+			System.out.println("destination : " + destination);
+
+			// 파일또는 폴더가 존재하는지 여부 판단
+			if (destination.exists() == false) {
+				// 해당 경로를 형성하는 모든 디렉터리를 만든다
+				boolean mkdirs = destination.mkdirs();
+				// 파일 쓰기가능으로 설정
+				destination.setWritable(true);
+
+				logger.debug("-------------- create directory ----------------------" + mkdirs);
 			}
 
-			String value = multipartRequest.getParameter(parameterName);
+			File targetFile = new File(filePath + SP + saveName);
+			System.out.println("targetFile : " + targetFile);
+			
+			// 프로젝트 내부에 파일을 업로드할 경우, 프로젝트가 업데이트되어 소스를 교체하면 파일이 유지되지 않을 위험이 있다
+			// 따라서 빌드된 프로젝트의 리소스와 사용자가 업로드한 리소스는 따로 관리
+			InputStream inputStream = multipartFile.getInputStream();
+			FileCopyUtils.copy(inputStream, new FileOutputStream(targetFile));
 
-			// 화면 FileUpTransfer 의 setPostData 로 셋팅한 저장될 파일경로 String을 셋팅한다. ("file")
-			if ("filepath".equals(parameterName)) {
-				if (value != null && !value.equals("")) {
-					// "WEB-INF/attachFile/" + "sample"
-					sUserPath = SP + value;
-				}
-				continue;
-			}
+			int row = resultDs.newRow();
+			resultDs.set(row, "file_uuid", uuid);
+			resultDs.set(row, "file_name", originalFilename);
+			resultDs.set(row, "file_size", targetFile.length());
+			resultDs.set(row, "file_savename", saveName);
+
+			logger.debug("uploaded file write success. file=" + originalFilename);
 		}
 	}
 
-	
-	
+	// 파일을 저장할 절대 경로 반환
+	private String getFilePath() {
+		ServletContext sc = appContext.getServletContext();
+		String realPath = sc.getRealPath("/");
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM");
+		Date date = new Date();
+		String str = df.format(date);
+		String yymm = str.replace("-", SP);
+		System.out.println("soso : " + yymm);
+		String uploadPath = realPath + PATH + sUserPath + SP + yymm;
+		System.out.println("uploadPath : "+uploadPath);
+		return uploadPath;
+	}
+
 	/*
 	 * 
 	 * 
@@ -205,64 +214,6 @@ public class FileController {
 	 * 
 	 * 
 	 * */
-	
-	
-	
-	// 실제파일 저장 및 저장파일정보 셋팅
-	private void uploadMultipartFiles(MultipartHttpServletRequest multipartRequest, DataSet resultDs) throws IOException {
-
-		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
-
-		String filePath = getFilePath();
-
-		Set<String> keySet = fileMap.keySet();
-
-		for (String name : keySet) {
-
-			MultipartFile multipartFile = fileMap.get(name);
-
-			String originalFilename = multipartFile.getOriginalFilename();
-
-			// IE에서 파일업로드 시 DataSet 파라매터의 Content-Type이 설정되지 않아 여기로 옴. 무시.
-			if (originalFilename == null || originalFilename.length() == 0) {
-				continue;
-			}
-
-			File destination = new File(filePath);
-
-			// 파일또는 폴더가 존재하는지 여부 판단
-			if (destination.exists() == false) {
-				// 해당 경로를 형성하는 모든 디렉터리를 만든다
-				boolean mkdirs = destination.mkdirs();
-				// 파일 쓰기가능으로 설정
-				destination.setWritable(true);
-
-				logger.debug("-------------- create directory ----------------------" + mkdirs);
-			}
-
-			File targetFile = new File(filePath + SP + originalFilename);
-
-			// 프로젝트 내부에 파일을 업로드할 경우, 프로젝트가 업데이트되어 소스를 교체하면 파일이 유지되지 않을 위험이 있다
-			// 따라서 빌드된 프로젝트의 리소스와 사용자가 업로드한 리소스는 따로 관리
-			InputStream inputStream = multipartFile.getInputStream();
-			FileCopyUtils.copy(inputStream, new FileOutputStream(targetFile));
-
-			int row = resultDs.newRow();
-			resultDs.set(row, "fileid", originalFilename);
-			resultDs.set(row, "filename", originalFilename);
-			resultDs.set(row, "filesize", targetFile.length());
-
-			logger.debug("uploaded file write success. file=" + originalFilename);
-		}
-	}
-
-	// 파일을 저장할 절대 경로 반환
-	private String getFilePath() {
-		ServletContext sc = appContext.getServletContext();
-		String realPath = sc.getRealPath("/");
-		String uploadPath = realPath + PATH + sUserPath;
-		return uploadPath;
-	}
 
 	// 파일 다운로드 - 해당경로의 파일을 NexacroFileResult 에 담아 반환 (화면에서 호출)
 	@RequestMapping(value = "/downloadFile.do")
@@ -355,7 +306,8 @@ public class FileController {
 	}
 
 	// 파일 압축 (압축파일도 서버에 저장을 하기 때문에 Job Scheduler 등으로 이후 삭제하여야 합니다)
-	private File getCompressZipFile(DataSet fileInfo, String realPath, String compressName, String charsetOfRequest) throws IOException {
+	private File getCompressZipFile(DataSet fileInfo, String realPath, String compressName, String charsetOfRequest)
+			throws IOException {
 
 		String dumpDir = "dummy" + SP;
 		String path = realPath;
